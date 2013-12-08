@@ -3,11 +3,16 @@ Go-Todo is a simple REST web application for managing your todo/task lists, writ
        
 ## Overview
 Go-Todo contains 2 objects, accounts and tasks.       
-An account can have many tasks.
-Accounts can be set to 3 different roles:      
+An account can have many todos/tasks assigned to them, and can be set to 3 different roles:      
  - Admin  
  - User  
  - None  
+
+An account consists of these fields:       
+*AccountId*, *Name*, *Email*, *Password(Hash)*, *Salt*, *Role*, *LastAuth-Timestamp*        
+
+A task consists of these fields:        
+*TaskId*, *AccountId(Foreign-Key)*, *Created-Timestamp*, *LastUpdate-Timestamp*, *Priority*, *Task-Text*       
 
 ## Installation
 Make sure you have a working Go environment (*Requires* Go1.2+).   
@@ -60,7 +65,12 @@ All following requests need to be given the query string:
 
 ## Client
 Next step for me to do is to write a simple standalone html file using jQuery to act as demo client.     
-It's on my Todo-List. ;-)
+It's on my Todo-List. ;-)    
+
+## Bugs
+Totally forgot about a tasks LastUpdated field. Currently it is set freely by POST and PUT requests. Doh!       
+Need to fix this.        
+Same goes for the Created field I guess. It should not be allowed for the client to modify this.
 
 ## License
 GPL v3, see LICENSE.TXT      
