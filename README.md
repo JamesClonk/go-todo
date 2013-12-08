@@ -15,7 +15,7 @@ Make sure you have a working Go environment (*Requires* Go1.2+).
 
 Use go get to install go-todo:
 ```
-$ go get github.com/Jamesclonk/go-todo
+$ go get github.com/JamesClonk/go-todo
 ```
 
 Make sure your PATH includes the `$GOPATH/bin` directory:
