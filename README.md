@@ -70,7 +70,11 @@ It's on my Todo-List. ;-)
 ## Bugs
 Totally forgot about a tasks LastUpdated field. Currently it is set freely by POST and PUT requests. Doh!       
 Need to fix this.        
-Same goes for the Created field I guess. It should not be allowed for the client to modify this.
+Same goes for the Created field I guess. It should not be allowed for the client to modify this.          
+
+There's probably also bugs in the unit test code.        
+As anyone can see by looking for example at todo_test.go, there was a lot of ugly copy&pasting involved.       
+Really need to do some refactoring once I get more comfortable in Go. ;-)
 
 ## License
 GPL v3, see LICENSE.TXT      

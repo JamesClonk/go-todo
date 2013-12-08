@@ -292,6 +292,8 @@ func Test_todo_getTask(t *testing.T) {
 }
 
 func Test_todo_addTask(t *testing.T) {
+	t.Fail() // need to check automatically set Created and LastUpdated timestamps.
+
 	// ============================================ Valid ============================================
 	request, err := http.NewRequest("POST", "http://localhost:8008/task/", nil)
 	if err != nil {
@@ -414,6 +416,9 @@ func Test_todo_addTask(t *testing.T) {
 }
 
 func Test_todo_editTask(t *testing.T) {
+	t.Fail() // need to check against not being allowed to modify Created and LastUpdated timestamps.
+	// LastUpdated should be set automatically!
+
 	// ============================================ Valid ============================================
 	request, err := http.NewRequest("PUT", "http://localhost:8008/task/6", nil)
 	if err != nil {
@@ -626,7 +631,7 @@ func Test_todo_editTask(t *testing.T) {
 
 	task, err = GetTaskById(11)
 	if err == nil || task != nil {
-		t.Errorf("GetTaskById() after unauthorized addTask() returned [%v], but expected nil", task)
+		t.Errorf("GetTaskById() after unauthorized editTask() returned [%v], but expected nil", task)
 	}
 
 	// ============================================ Valid Admin Nonexisting Task ============================================
@@ -1241,7 +1246,7 @@ func Test_todo_editAccount(t *testing.T) {
 
 	account, err = GetAccountById(7)
 	if err == nil || account != nil {
-		t.Errorf("GetAccountById() after unauthorized addTask() returned [%v], but expected nil", account)
+		t.Errorf("GetAccountById() after unauthorized editAccount() returned [%v], but expected nil", account)
 	}
 
 	// ============================================ Valid Nonexisting Account ============================================
@@ -1300,7 +1305,7 @@ func Test_todo_editAccount(t *testing.T) {
 
 	account, err = GetAccountById(9)
 	if err == nil || account != nil {
-		t.Errorf("GetAccountById() after unauthorized addTask() returned [%v], but expected nil", account)
+		t.Errorf("GetAccountById() after unauthorized editAccount() returned [%v], but expected nil", account)
 	}
 
 	// ============================================ Nonexisting Account ============================================
@@ -1333,9 +1338,9 @@ func Test_todo_deleteAccount(t *testing.T) {
 	_checkResponseCode(t, response, 200)
 	_checkResponseBody(t, response, "{\"Delete\": \"Success\"}")
 
-	account, err := GetTaskById(3)
+	account, err := GetAccountById(3)
 	if account != nil {
-		t.Errorf("GetTaskById() after deleteAccount() still returned a account object, when it should not! Got [%v]", account)
+		t.Errorf("GetAccountById() after deleteAccount() still returned a account object, when it should not! Got [%v]", account)
 		if err != nil {
 			t.Error(err)
 		}
@@ -1365,12 +1370,12 @@ func Test_todo_deleteAccount(t *testing.T) {
 	_checkResponseCode(t, response, 401)
 	_checkResponseBody(t, response, "Unauthorized")
 
-	account, err = GetTaskById(1)
+	account, err = GetAccountById(1)
 	if err != nil {
 		t.Error(err)
 	}
 	if account == nil {
-		t.Error("GetTaskById() after deleteAccount() did not return a account object, but it still should!")
+		t.Error("GetAccountById() after deleteAccount() did not return a account object, but it still should!")
 	}
 
 	// ============================================ Valid Admin ============================================
@@ -1385,9 +1390,9 @@ func Test_todo_deleteAccount(t *testing.T) {
 	_checkResponseCode(t, response, 200)
 	_checkResponseBody(t, response, "{\"Delete\": \"Success\"}")
 
-	account, err = GetTaskById(2)
+	account, err = GetAccountById(2)
 	if account != nil {
-		t.Errorf("GetTaskById() after deleteAccount() still returned a account object, when it should not! Got [%v]", account)
+		t.Errorf("GetAccountById() after deleteAccount() still returned a account object, when it should not! Got [%v]", account)
 		if err != nil {
 			t.Error(err)
 		}
