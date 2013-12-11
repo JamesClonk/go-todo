@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+	<!-- Basic Page Needs
+  	================================================== -->
+	<meta charset="utf-8">
+	<title>Go-Todo Client</title>
+	<meta name="description" content="A simple Go-Todo client">
+	<meta name="author" content="JamesClonk">
+
+	<!-- Mobile Specific Metas
+  	================================================== -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<!-- CSS
+  	================================================== -->
+	<link rel="stylesheet" href="css/base.css">
+	<link rel="stylesheet" href="css/skeleton.css">
+	<link rel="stylesheet" href="css/layout.css">
+	<link rel="stylesheet" href="css/go-todo.css">
+
+	<!-- JavaScript
+	================================================== -->
+	<script type='text/javascript' src='js/jquery-2.0.3.min.js'></script>
+	<script type='text/javascript' src='js/underscore-1.5.2.min.js'></script>
+	<script type='text/javascript' src='js/cryptojs-3.1.2-sha512.js'></script>
+
+	<!-- Favicons
+	================================================== -->
+	<link rel="shortcut icon" href="images/favicon.ico">
+	<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+	<link rel="apple-touch-icon" sizes="72x72" href="images/apple-touch-icon-72x72.png">
+	<link rel="apple-touch-icon" sizes="114x114" href="images/apple-touch-icon-114x114.png"></head>
+<body>
+
+	<script type='text/javascript'>
+	var basePath = "http://localhost:8008";
+	var login = {
+		LoggedIn: false,
+		Id: 0,
+		AccountId: 0,
+		Name: "",
+		Email: "",
+		Password: "",
+		Salt: "",
+		Role: "",
+		Timestamp: 0,
+		LastAuth: 0
+	};
+	var tasks = [];
+	var sortOrder = {"Priority": false, "Created": false, "LastUpdated": false};
+
+	function resetLogin() {
+		login.LoggedIn = false;
+		login.Id = 0;
+		login.AccountId = 0;
+		login.Name = "";
+		login.Email = "";
+		login.Password = "";
+		login.Salt = "";
+		login.Role = "";
+		login.Timestamp = 0;
+		login.LastAuth = 0;
+	}
+
+	function resetTasks() {
+		tasks.length = 0;
+		tasks = [];
+	}
+
+	function isLoggedIn() {
+		if(login.Id == login.AccountId) {
+			showTasks();
+			return true;
+		} else {
+			resetLogin();
+			showLogin();
+			return false;
+		}
+	}
+
+	function showLogin() {
+		$(".login").show();
+		$(".menu").hide();
+		$(".task").hide();
+	}
+
+	function showTasks() {
+		$(".login").hide();
+		$(".menu").show();
+		$(".task").show();
+	}
+
+	function generateSalt() {
+		var i = 0;
+		var salt = "";
+
+		while(i < 16){
+			var num = (Math.floor((Math.random() * 100)) % 94) + 33;
+
+			if ((num >=33) && (num <=47)) { continue; }
+			if ((num >=58) && (num <=64)) { continue; }
+			if ((num >=91) && (num <=96)) { continue; }
+			if ((num >=123) && (num <=126)) { continue; }
+			
+			salt += String.fromCharCode(num);
+			i++;
+		}
+		
+		return salt;
+	}
+
+	function generateHtmlTask(task) {
+		var createdDate = new Date(task.Created*1000);
+		var lastUpdatedDate = new Date(task.LastUpdated*1000);
+
+		var html = '<div class="sixteen columns task">' +
+							'<div class="two column">' +
+								'<div class="time">Created: '+createdDate.toLocaleString()+'</div>' +
+								'<div class="time">Last Updated: '+lastUpdatedDate.toLocaleString()+'</div>' +
+							'</div>' +
+							'<div class="one columns">' +
+								'<div>'+task.Priority+'</div>' +
+							'</div>' +
+							'<div class="twelve columns">' +
+								'<p>'+task.Task+'</p>' +
+							'</div>' +
+						'</div>';
+		return html;
+	}
+
+	function addHtmlTask(task) {
+		$(".container").append(generateHtmlTask(task));
+	}
+
+	function queryAuth() {
+		var salt = generateSalt();
+		var token = CryptoJS.SHA512(login.Timestamp + salt + login.Password);
+		return "?rId=" + login.AccountId + "&rTimestamp=" + login.Timestamp + "&rSalt=" + salt + "&rToken=" + token.toString(CryptoJS.enc.Hex);
+	}
+
+	function loginUser() {
+		resetLogin();
+
+		login.Email = $("input[name='email']").val();
+		login.Password = $("input[name='password']").val();
+
+		var jsonUrl = basePath + "/auth/?login=" + login.Email;
+
+		// retrieve auth information
+		$.getJSON(jsonUrl, function(data) {
+			$.each(data, function(key, val) {
+		 		login[key] = val;
+		 	});
+
+			var hash = CryptoJS.SHA512(login.Salt + login.Password);
+		 	login.Password = hash.toString(CryptoJS.enc.Hex);
+		 	
+		 	// query /account/ to test password and retrieve more account information
+		 	jsonUrl = basePath + "/account/" + login.AccountId + queryAuth();
+		 	$.getJSON(jsonUrl, function(data) {
+			 	$.each(data, function(key, val) {
+			 		if(key != "Password") { // don't overwrite the password
+			 			login[key] = val;
+			 		}
+			 	})
+			 	loadTasks();
+
+			}).fail(function() {
+				resetLogin();
+				showLogin();
+			});
+
+		}).fail(function() {
+			resetLogin();
+			showLogin();
+		});
+	}
+
+	function loadTasks() {
+		if(!isLoggedIn()) { return; }
+
+		// remove all tasks first if there are already some
+		resetTasks();
+		removeHtmlTasks();
+
+		var jsonUrl = basePath + "/tasks/" + queryAuth();
+
+		// retrieve tasks
+		$.getJSON(jsonUrl, function(data) {
+		 	$.each(data, function(_, task) {;
+		 		tasks.push(task);
+		 	});
+		 	addHtmlTasks(tasks);
+		});
+	}
+
+	function removeHtmlTasks() {
+		$(".task").each(function() {
+			$(this).remove();
+		});
+	}
+
+	function addHtmlTasks(tasks) {
+		if(!isLoggedIn()) { return; }
+
+		// remove html tasks first
+		removeHtmlTasks();
+		_.forEach(tasks, addHtmlTask); // add tasks to html
+	}
+
+	function sortTasks(field) {
+		tasks = _.sortBy(tasks, function(task){ return task[field]; });
+
+		sortOrder[field] = !sortOrder[field];
+		if(sortOrder[field]) {
+			tasks = tasks.reverse();
+		}
+	}
+
+	$(function() {
+		// show login fields or tasks depending on whether user is logged in or not
+		if(login.LoggedIn) {
+			showTasks();
+		} else {
+			showLogin();
+		}
+
+		$("input[name='login']").click(function() {
+			loginUser();
+		});
+
+		$("a.showTasksSortedByPriority").click(function() {
+			sortTasks("Priority");
+			addHtmlTasks(tasks);
+		});
+
+		$("a.showTasksSortedByCreated").click(function() {
+			sortTasks("Created");
+			addHtmlTasks(tasks);
+		});
+
+		$("a.showTasksSortedByLastUpdated").click(function() {
+			sortTasks("LastUpdated");
+			addHtmlTasks(tasks);
+		});
+	});
+	</script>
+
+	<!-- Primary Page Layout
+	================================================== -->
+	<div class="container">
+
+		<div class="sixteen columns">
+			<h1 class="remove-bottom" style="margin-top: 40px">Go-Todo Client</h1>
+			<h5>A simple standalone Go-Todo client, written with HTML &amp; jQuery</h5>
+			<hr />
+		</div>
+
+		<div class="sixteen columns login">
+			<h3>Login</h3>
+			<input type="text" value="email" name="email"/>
+			<input type="password" value="password" name="password"/>
+			<input type="submit" value="Login" name="login"/>
+		</div>
+
+		<div class="sixteen columns menu">
+			<li>
+				<h4>
+					<a href="#account">Account</a>
+				</h4>
+			</li>
+			<li>
+				<h4>
+					<a href="#tasks" class="showTasksSortedByPriority">Sort By Priority</a>
+				</h4>
+			</li>
+			<li>
+				<h4>
+					<a href="#tasks" class="showTasksSortedByCreated">Sort By Created</a>
+				</h4>
+			</li>
+			<li>
+				<h4>
+					<a href="#tasks" class="showTasksSortedByLastUpdated">Sort By LastUpdated</a>
+				</h4>
+			</li>
+		</div>
+
+	</div>
+	<!-- container -->
+
+	<!-- End Document
+================================================== -->
+</body>
+</html>

@@ -61,20 +61,29 @@ func SetupDatabase() {
 	}
 }
 
-func SetupAdmin() Account {
+func SetupAdmin() (Account, string) {
 	salt, err := GenerateRandomString()
 	if err != nil {
 		log.Fatal(err)
 	}
-	password, err := GenerateRandomString()
-	if err != nil {
-		log.Fatal(err)
-	}
-	a := Account{-1, "Admin", "admin@admin", HashPassword(*salt, *password), *salt, "Admin", 0}
+	password := "password"
+	a := Account{-1, "Admin", "admin@admin", HashPassword(*salt, password), *salt, "Admin", 0}
 	if err := a.Save(); err != nil {
 		log.Fatal(err)
 	}
-	return a
+	return a, password
+}
+
+func SetupSampleTasks() {
+	tasks := Tasks{
+		{-1, 1, 1234567890, 1234567895, 3, "Buy food!"},
+		{-1, 1, 1234567891, 1234567895, 1, "Get some sleep..."},
+		{-1, 1, 1234567892, 1234567895, 4, "Buy xmas presents!"},
+		{-1, 1, 1234567893, 1234567895, 3, "Buy water!"},
+	}
+	if err := tasks.Save(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 func scanTasks(rows *sql.Rows) (*Tasks, error) {

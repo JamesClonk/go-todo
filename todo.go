@@ -18,13 +18,16 @@ type MethodHandler map[string]func(w http.ResponseWriter, r *http.Request, accou
 
 var fileFlag = flag.String("database", "./data/tasks.db", "database file")
 var databaseFlag = flag.Bool("createDatabase", false, "will setup a new empty database")
-var adminFlag = flag.Bool("createAdmin", false, "will create a new admin account in database")
+var adminFlag = flag.Bool("createAdmin", false, "will create a new admin account in the database")
+var taskFlag = flag.Bool("createTasks", false, "will create some sample tasks in the database")
 
 func main() {
 	parseCommandline()
 
-	http.HandleFunc("/auth", getAuth)
-	http.HandleFunc("/tasks", authHandler(MethodHandler{
+	http.Handle("/client/", http.StripPrefix("/client/", http.FileServer(http.Dir("client/"))))
+
+	http.HandleFunc("/auth/", getAuth)
+	http.HandleFunc("/tasks/", authHandler(MethodHandler{
 		"GET": getTasks,
 	}))
 	http.HandleFunc("/task/", authHandler(MethodHandler{
@@ -34,7 +37,7 @@ func main() {
 		"DELETE": deleteTask,
 	}))
 
-	http.HandleFunc("/accounts", authHandler(MethodHandler{
+	http.HandleFunc("/accounts/", authHandler(MethodHandler{
 		"GET": getAccounts,
 	}))
 	http.HandleFunc("/account/", authHandler(MethodHandler{
@@ -57,8 +60,12 @@ func parseCommandline() {
 	}
 
 	if *adminFlag {
-		account := SetupAdmin()
-		log.Printf("Admin account created: [%v]", account)
+		account, password := SetupAdmin()
+		log.Printf("Admin account created: [%v], with password: [%v]", account, password)
+	}
+
+	if *taskFlag {
+		SetupSampleTasks()
 	}
 }
 

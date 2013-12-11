@@ -36,10 +36,10 @@ $ go-todo
 ```
 
 It will now start a webserver listening on port 8008, and provide a REST interface with the following endpoints:  
- - /auth  
- - /tasks  
+ - /auth/  
+ - /tasks/  
  - /task/{taskId}  
- - /accounts  
+ - /accounts/  
  - /account/{accountId}  
 
 Use *GET* on **/auth** with query parameter ?login={email} to retrieve auth information for a particular user account.     
