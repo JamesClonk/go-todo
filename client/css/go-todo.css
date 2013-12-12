@@ -2,3 +2,24 @@
 div.container {
 	padding-top: 25px; 
 }
+
+div.menu {
+	padding-bottom: 40px; 
+}
+
+div.task {
+	padding-bottom: 25px;
+}
+
+div.id {
+	font-size: 75%;
+}
+
+
+div.modify {
+	font-size: 80%;
+}
+
+div.time {
+	font-size: 80%;
+}

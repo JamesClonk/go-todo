@@ -289,14 +289,6 @@ func Test_storage_DeleteAccount(t *testing.T) {
 	}
 }
 
-func Test_storage_SetupAdmin(t *testing.T) {
-	t.Fail()
-}
-
-func Test_storage_SetupSampleTasks(t *testing.T) {
-	t.Fail()
-}
-
 func Test_storage_cleanup(t *testing.T) {
 	_storage_cleanup()
 }

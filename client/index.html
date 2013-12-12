@@ -95,19 +95,15 @@
 	function generateSalt() {
 		var i = 0;
 		var salt = "";
-
 		while(i < 16){
 			var num = (Math.floor((Math.random() * 100)) % 94) + 33;
-
 			if ((num >=33) && (num <=47)) { continue; }
 			if ((num >=58) && (num <=64)) { continue; }
 			if ((num >=91) && (num <=96)) { continue; }
 			if ((num >=123) && (num <=126)) { continue; }
-			
-			salt += String.fromCharCode(num);
 			i++;
+			salt += String.fromCharCode(num);
 		}
-		
 		return salt;
 	}
 
@@ -115,18 +111,26 @@
 		var createdDate = new Date(task.Created*1000);
 		var lastUpdatedDate = new Date(task.LastUpdated*1000);
 
-		var html = '<div class="sixteen columns task">' +
-							'<div class="two column">' +
-								'<div class="time">Created: '+createdDate.toLocaleString()+'</div>' +
-								'<div class="time">Last Updated: '+lastUpdatedDate.toLocaleString()+'</div>' +
-							'</div>' +
-							'<div class="one columns">' +
-								'<div>'+task.Priority+'</div>' +
-							'</div>' +
-							'<div class="twelve columns">' +
-								'<p>'+task.Task+'</p>' +
-							'</div>' +
-						'</div>';
+		var html = '<div class="sixteen columns task" title="Task #'+task.Id+'">' +
+						'<div class="one column">' +
+							'<div class="id">id: '+task.Id+'</div>' +
+						'</div>' +
+						'<div class="three columns">' +
+							'<div>'+task.Priority+'</div>' +
+							'<div>'+task.Priority+'</div>' +
+						'</div>' +
+						'<div class="nine columns">' +
+							'<p>'+task.Task+'</p>' +
+						'</div>' +
+						'<div class="two columns">' +
+							'<div class="modify"><a href="#tasks" title="Edit Task #'+task.Id+'">Edit</a></div>' +
+							'<div class="modify"><a href="#tasks" title="Remove Task #'+task.Id+'">Remove</a></div>' +
+						'</div>' +
+						'<div class="five column">' +
+							'<div class="time">Created: '+createdDate.toLocaleString()+'</div>' +
+							'<div class="time">Last Updated: '+lastUpdatedDate.toLocaleString()+'</div>' +
+						'</div>' +
+					'</div>';
 		return html;
 	}
 
@@ -208,6 +212,26 @@
 		// remove html tasks first
 		removeHtmlTasks();
 		_.forEach(tasks, addHtmlTask); // add tasks to html
+
+		$("a[title^='Edit']").click(function() {
+			//Edit Task: 
+			alert("implement Edit Task here.. (PUT)");
+		});
+
+		$("a[title^='Remove']").click(function() {
+			//[Remove Task #]
+			var taskId = $(this).attr('title').substring(13);
+			var task = _.find(tasks, function(task){ return task.Id == taskId; });
+
+			// send deletion request
+			alert("implement deletion request here.. (DELETE)");
+
+			// remove from array
+			tasks = _.without(tasks, task);
+
+			// remove html
+			$("div[title='Task #"+task.Id+"']").remove();
+		});
 	}
 
 	function sortTasks(field) {
@@ -231,18 +255,8 @@
 			loginUser();
 		});
 
-		$("a.showTasksSortedByPriority").click(function() {
-			sortTasks("Priority");
-			addHtmlTasks(tasks);
-		});
-
-		$("a.showTasksSortedByCreated").click(function() {
-			sortTasks("Created");
-			addHtmlTasks(tasks);
-		});
-
-		$("a.showTasksSortedByLastUpdated").click(function() {
-			sortTasks("LastUpdated");
+		$("a.SortTasks").click(function() {
+			sortTasks($(this).attr('title'));
 			addHtmlTasks(tasks);
 		});
 	});
@@ -266,26 +280,9 @@
 		</div>
 
 		<div class="sixteen columns menu">
-			<li>
-				<h4>
-					<a href="#account">Account</a>
-				</h4>
-			</li>
-			<li>
-				<h4>
-					<a href="#tasks" class="showTasksSortedByPriority">Sort By Priority</a>
-				</h4>
-			</li>
-			<li>
-				<h4>
-					<a href="#tasks" class="showTasksSortedByCreated">Sort By Created</a>
-				</h4>
-			</li>
-			<li>
-				<h4>
-					<a href="#tasks" class="showTasksSortedByLastUpdated">Sort By LastUpdated</a>
-				</h4>
-			</li>
+			Sort Tasks by: <a href="#tasks" title="Priority" class="SortTasks">Priority</a>, 
+			<a href="#tasks" title="Created" class="SortTasks">Created</a>, 
+			<a href="#tasks" title="LastUpdated" class="SortTasks">LastUpdated</a>
 		</div>
 
 	</div>

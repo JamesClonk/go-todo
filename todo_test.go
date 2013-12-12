@@ -1,6 +1,7 @@
 package main
 
 import "testing"
+import "time"
 import "strconv"
 import "strings"
 import "net/url"
@@ -11,10 +12,6 @@ import "encoding/json"
 func Test_todo_setup(t *testing.T) {
 	isLogging = false
 	_storage_setup(t)
-}
-
-func Test_todo_parseCommandline(t *testing.T) {
-	t.Fail()
 }
 
 func Test_todo_authHandler(t *testing.T) {
@@ -292,8 +289,6 @@ func Test_todo_getTask(t *testing.T) {
 }
 
 func Test_todo_addTask(t *testing.T) {
-	t.Fail() // need to check automatically set Created and LastUpdated timestamps.
-
 	// ============================================ Valid ============================================
 	request, err := http.NewRequest("POST", "http://localhost:8008/task/", nil)
 	if err != nil {
@@ -321,8 +316,18 @@ func Test_todo_addTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if *task != newTask {
+	// Created and LastUpdated are set automatically
+	if task.Id != newTask.Id ||
+		task.AccountId != newTask.AccountId ||
+		task.Priority != newTask.Priority ||
+		task.Task != newTask.Task {
 		t.Errorf("GetTaskById() after addTask() returned [%v], but expected task [%v]", task, newTask)
+	}
+	now := int(time.Now().Unix())
+	if task.Created < now-2000 ||
+		task.LastUpdated < now-2000 ||
+		task.Created > now+1 || task.LastUpdated > now+1 {
+		t.Errorf("addTask() Created and LastUpdated are not within expected range. [%v]", task)
 	}
 
 	// ============================================ Invalid ============================================
@@ -390,8 +395,19 @@ func Test_todo_addTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if *task != newTask {
+	// Created and LastUpdated are set automatically
+	if task.Id != newTask.Id ||
+		task.AccountId != newTask.AccountId ||
+		task.Priority != newTask.Priority ||
+		task.Task != newTask.Task {
 		t.Errorf("GetTaskById() after addTask() returned [%v], but expected task [%v]", task, newTask)
+	}
+	now = int(time.Now().Unix())
+	if task.Created < now-2000 ||
+		task.LastUpdated < now-2000 ||
+		task.Created > now+1 ||
+		task.LastUpdated > now+1 {
+		t.Errorf("addTask() Created and LastUpdated are not within expected range. [%v]", task)
 	}
 
 	// ============================================ Nonexisting Account ============================================
@@ -416,9 +432,6 @@ func Test_todo_addTask(t *testing.T) {
 }
 
 func Test_todo_editTask(t *testing.T) {
-	t.Fail() // need to check against not being allowed to modify Created and LastUpdated timestamps.
-	// LastUpdated should be set automatically!
-
 	// ============================================ Valid ============================================
 	request, err := http.NewRequest("PUT", "http://localhost:8008/task/6", nil)
 	if err != nil {
@@ -446,8 +459,16 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if *task != editedTask {
+	// Created cannot be modified
+	if task.Id != editedTask.Id ||
+		task.AccountId != editedTask.AccountId ||
+		task.Priority != editedTask.Priority ||
+		task.Task != editedTask.Task ||
+		task.LastUpdated != editedTask.LastUpdated {
 		t.Errorf("GetTaskById() after editTask() returned [%v], but expected task [%v]", task, editedTask)
+	}
+	if task.Created != 1234567890 {
+		t.Errorf("editTask() Created should not have been modified. [%v]", task)
 	}
 
 	// ============================================ Invalid URL ============================================
@@ -532,8 +553,16 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if *task != editedTask {
+	// Created cannot be modified
+	if task.Id != editedTask.Id ||
+		task.AccountId != editedTask.AccountId ||
+		task.Priority != editedTask.Priority ||
+		task.Task != editedTask.Task ||
+		task.LastUpdated != editedTask.LastUpdated {
 		t.Errorf("GetTaskById() after editTask() returned [%v], but expected task [%v]", task, editedTask)
+	}
+	if task.Created != 1234567890 {
+		t.Errorf("editTask() Created should not have been modified. [%v]", task)
 	}
 
 	// ============================================ Nonmatching Id ============================================
@@ -584,12 +613,12 @@ func Test_todo_editTask(t *testing.T) {
 		return
 	}
 	request.Form = url.Values{
-		"Id":          {"10"}, // task 10 does not yet exist
-		"AccountId":   {"3"},
-		"Created":     {"1234567897"},
-		"LastUpdated": {"1234567897"},
-		"Priority":    {"1"},
-		"Task":        {"Test!"},
+		"Id":        {"10"}, // task 10 does not yet exist
+		"AccountId": {"3"},
+		"Created":   {"1234567897"},
+		//"LastUpdated": {"0"}, // check if server automatically sets LastUpdated
+		"Priority": {"1"},
+		"Task":     {"Test!"},
 	}
 
 	response = httptest.NewRecorder()
@@ -604,8 +633,19 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if *task != editedTask {
+	// Created cannot be modified
+	if task.Id != editedTask.Id ||
+		task.AccountId != editedTask.AccountId ||
+		task.Priority != editedTask.Priority ||
+		task.Task != editedTask.Task {
 		t.Errorf("GetTaskById() after editTask() returned [%v], but expected task [%v]", task, editedTask)
+	}
+	now := int(time.Now().Unix())
+	if task.Created < now-2000 ||
+		task.LastUpdated < now-2000 ||
+		task.Created > now+1 ||
+		task.LastUpdated > now+1 {
+		t.Errorf("editTask() Created and LastUpdated are not within expected range. [%v]", task)
 	}
 
 	// ============================================ Unauthorized Nonexisting Task ============================================
@@ -661,8 +701,18 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	if *task != editedTask {
+	// Created cannot be modified
+	if task.Id != editedTask.Id ||
+		task.AccountId != editedTask.AccountId ||
+		task.Priority != editedTask.Priority ||
+		task.Task != editedTask.Task ||
+		task.LastUpdated != editedTask.LastUpdated {
 		t.Errorf("GetTaskById() after editTask() returned [%v], but expected task [%v]", task, editedTask)
+	}
+	now = int(time.Now().Unix())
+	if task.Created < now-2000 ||
+		task.Created > now+1 {
+		t.Errorf("editTask() Created is not within expected range. [%v]", task)
 	}
 
 	// ============================================ Nonexisting Account ============================================

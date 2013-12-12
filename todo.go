@@ -221,16 +221,11 @@ func addTask(w http.ResponseWriter, r *http.Request, accountId int) {
 		http.Error(w, "Invalid data", http.StatusBadRequest)
 		return
 	}
-	created, err := strconv.Atoi(data.Get("Created"))
-	if err != nil {
-		http.Error(w, "Invalid data", http.StatusBadRequest)
-		return
-	}
-	lastUpdated, err := strconv.Atoi(data.Get("LastUpdated"))
-	if err != nil {
-		http.Error(w, "Invalid data", http.StatusBadRequest)
-		return
-	}
+
+	// timestamps upon task creating are enforced by server and cannot be overwritten by client
+	created := int(time.Now().Unix())
+	lastUpdated := int(time.Now().Unix())
+
 	priority, err := strconv.Atoi(data.Get("Priority"))
 	if err != nil {
 		http.Error(w, "Invalid data", http.StatusBadRequest)
@@ -332,16 +327,10 @@ func editTask(w http.ResponseWriter, r *http.Request, accountId int) {
 		return
 	}
 
-	created, err := strconv.Atoi(data.Get("Created"))
-	if err != nil {
-		http.Error(w, "Invalid data", http.StatusBadRequest)
-		return
-	}
-
 	lastUpdated, err := strconv.Atoi(data.Get("LastUpdated"))
-	if err != nil {
-		http.Error(w, "Invalid data", http.StatusBadRequest)
-		return
+	if err != nil || lastUpdated < 1 {
+		// server takes care of lastUpdated timestamp in this case
+		lastUpdated = int(time.Now().Unix())
 	}
 
 	priority, err := strconv.Atoi(data.Get("Priority"))
@@ -350,7 +339,11 @@ func editTask(w http.ResponseWriter, r *http.Request, accountId int) {
 		return
 	}
 
-	task.Created = created
+	//task.Created = created // created cannot be overwritten by client
+	if task.Created < 1 {
+		task.Created = int(time.Now().Unix())
+	}
+
 	task.LastUpdated = lastUpdated
 	task.Priority = priority
 	task.Task = data.Get("Task")

@@ -64,17 +64,17 @@ All following requests need to be given the query string:
 (Most things here only work or make sense using an account with "Admin" role)
 
 ## Client
-Next step for me to do is to write a simple standalone html file using jQuery to act as demo client.     
+Next step for me to do is to write a sample html page using jQuery to act as demo client.     
 It's on my Todo-List. ;-)    
 
 ## Bugs
-Totally forgot about a tasks LastUpdated field. Currently it is set freely by POST and PUT requests. Doh!       
-Need to fix this.        
-Same goes for the Created field I guess. It should not be allowed for the client to modify this.          
-
-There's probably also bugs in the unit test code.        
+There's probably lotsa bugs in the unit test code.        
 As anyone can see by looking for example at todo_test.go, there was a lot of ugly copy&pasting involved.       
 Really need to do some refactoring once I get more comfortable in Go. ;-)
+
+## Todo
+ - Refactor unit test code.      
+ - Finish sample html demo client.      
 
 ## License
 GPL v3, see LICENSE.TXT      
