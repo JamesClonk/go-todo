@@ -25,7 +25,7 @@ func Authenticate(r *http.Request) (*int, error) {
 
 	serverTimestamp := time.Now().Unix()
 	timeDiff := math.Abs(float64(serverTimestamp - int64(requestTimestamp)))
-	if timeDiff > 2000 {
+	if timeDiff > 5 {
 		return nil, nil
 	}
 

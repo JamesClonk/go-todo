@@ -25,6 +25,9 @@
 	<script type='text/javascript' src='js/jquery-2.0.3.min.js'></script>
 	<script type='text/javascript' src='js/underscore-1.5.2.min.js'></script>
 	<script type='text/javascript' src='js/cryptojs-3.1.2-sha512.js'></script>
+	<script type='text/javascript' src='js/momentjs-2.4.0.min.js'></script>
+	<script type='text/javascript' src='js/raphael-2.1.2.min.js'></script>
+	<script type='text/javascript' src='js/go-todo.js'></script>
 
 	<!-- Favicons
 	================================================== -->
@@ -35,244 +38,7 @@
 <body>
 
 	<script type='text/javascript'>
-	var basePath = "http://localhost:8008";
-	var login = {
-		LoggedIn: false,
-		Id: 0,
-		AccountId: 0,
-		Name: "",
-		Email: "",
-		Password: "",
-		Salt: "",
-		Role: "",
-		Timestamp: 0,
-		LastAuth: 0
-	};
-	var tasks = [];
-	var sortOrder = {"Priority": false, "Created": false, "LastUpdated": false};
-
-	function resetLogin() {
-		login.LoggedIn = false;
-		login.Id = 0;
-		login.AccountId = 0;
-		login.Name = "";
-		login.Email = "";
-		login.Password = "";
-		login.Salt = "";
-		login.Role = "";
-		login.Timestamp = 0;
-		login.LastAuth = 0;
-	}
-
-	function resetTasks() {
-		tasks.length = 0;
-		tasks = [];
-	}
-
-	function isLoggedIn() {
-		if(login.Id == login.AccountId) {
-			showTasks();
-			return true;
-		} else {
-			resetLogin();
-			showLogin();
-			return false;
-		}
-	}
-
-	function showLogin() {
-		$("div.login").show();
-		$("div.menu").hide();
-		$("div.task").hide();
-		$("div.newTask").hide();
-	}
-
-	function showTasks() {
-		$("div.login").hide();
-		$("div.menu").show();
-		$("div.task").show();
-		$("div.newTask").hide();
-	}
-
-	function toggleAddTask() {
-		$("div.newTask").toggle();
-	}
-
-	function generateSalt() {
-		var i = 0;
-		var salt = "";
-		while(i < 16){
-			var num = (Math.floor((Math.random() * 100)) % 94) + 33;
-			if ((num >=33) && (num <=47)) { continue; }
-			if ((num >=58) && (num <=64)) { continue; }
-			if ((num >=91) && (num <=96)) { continue; }
-			if ((num >=123) && (num <=126)) { continue; }
-			i++;
-			salt += String.fromCharCode(num);
-		}
-		return salt;
-	}
-
-	function generateHtmlTask(task) {
-		var createdDate = new Date(task.Created*1000);
-		var lastUpdatedDate = new Date(task.LastUpdated*1000);
-
-		var html = '<div class="sixteen columns task" title="Task #'+task.Id+'">' +
-						'<div class="one column">' +
-							'<div class="id">id: '+task.Id+'</div>' +
-						'</div>' +
-						'<div class="three columns">' +
-							'<div>'+task.Priority+'</div>' +
-							'<div>'+task.Priority+'</div>' +
-						'</div>' +
-						'<div class="nine columns">' +
-							'<p>'+task.Task+'</p>' +
-						'</div>' +
-						'<div class="two columns">' +
-							'<div class="modify"><a href="#tasks" title="Edit Task #'+task.Id+'">Edit</a></div>' +
-							'<div class="modify"><a href="#tasks" title="Remove Task #'+task.Id+'">Remove</a></div>' +
-						'</div>' +
-						'<div class="five column">' +
-							'<div class="time">Created: '+createdDate.toLocaleString()+'</div>' +
-							'<div class="time">Last Updated: '+lastUpdatedDate.toLocaleString()+'</div>' +
-						'</div>' +
-					'</div>';
-		return html;
-	}
-
-	function addHtmlTask(task) {
-		$("div.container").append(generateHtmlTask(task));
-	}
-
-	function queryAuth() {
-		var salt = generateSalt();
-		var token = CryptoJS.SHA512(login.Timestamp + salt + login.Password);
-		return "?rId=" + login.AccountId + "&rTimestamp=" + login.Timestamp + "&rSalt=" + salt + "&rToken=" + token.toString(CryptoJS.enc.Hex);
-	}
-
-	function loginUser() {
-		resetLogin();
-
-		login.Email = $("input[name='email']").val();
-		login.Password = $("input[name='password']").val();
-
-		var jsonUrl = basePath + "/auth/?login=" + login.Email;
-
-		// retrieve auth information
-		$.getJSON(jsonUrl, function(data) {
-			$.each(data, function(key, val) {
-		 		login[key] = val;
-		 	});
-
-			var hash = CryptoJS.SHA512(login.Salt + login.Password);
-		 	login.Password = hash.toString(CryptoJS.enc.Hex);
-		 	
-		 	// query /account/ to test password and retrieve more account information
-		 	url = basePath + "/account/" + login.AccountId + queryAuth();
-		 	$.getJSON(url, function(data) {
-			 	$.each(data, function(key, val) {
-			 		if(key != "Password") { // don't overwrite the password
-			 			login[key] = val;
-			 		}
-			 	})
-			 	loadTasks();
-
-			}).fail(function() {
-				resetLogin();
-				showLogin();
-			});
-
-		}).fail(function() {
-			resetLogin();
-			showLogin();
-		});
-	}
-
-	function loadTasks() {
-		if(!isLoggedIn()) { return; }
-
-		// remove all tasks first if there are already some
-		resetTasks();
-		removeHtmlTasks();
-
-		// retrieve tasks
-		var url = basePath + "/tasks/" + queryAuth();
-		$.getJSON(url, function(data) {
-		 	$.each(data, function(_, task) {;
-		 		tasks.push(task);
-		 	});
-		 	addHtmlTasks(tasks);
-		});
-	}
-
-	function removeHtmlTasks() {
-		$("div.task").each(function() {
-			$(this).remove();
-		});
-	}
-
-	function addHtmlTasks(tasks) {
-		// remove html tasks first
-		removeHtmlTasks();
-		_.forEach(tasks, addHtmlTask); // add tasks to html
-
-		$("a[title^='Edit']").click(function() {
-			//Edit Task: 
-			alert("implement Edit Task here.. (PUT)");
-		});
-
-		$("a[title^='Remove']").click(function() {
-			//[Remove Task #]
-			var taskId = $(this).attr('title').substring(13);
-			var task = _.find(tasks, function(task){ return task.Id == taskId; });
-
-			// send deletion request
-			var url = basePath + "/task/" + task.Id + queryAuth();
-			$.ajax({
-			    url: url,
-			    type: 'DELETE',
-			    datatype: 'json',
-			    success: function(result) {
-			        if(result["Delete"] != "Success") {
-			        	alert("ERROR: Could not remove task!");
-			        } else {
-			        	loadTasks();
-						showTasks();
-			        }
-			    }
-			}).fail(function() {
-				alert("ERROR: Could not remove task!");
-			});
-		});
-	}
-
-	function addNewTask() {
-		// send add request
-		var data = $('#AddNewTask').serialize();
-		var url = basePath + "/task/" + queryAuth();
-		$.ajax({
-		    url: url,
-		    type: 'POST',
-		    data: data,
-		    //datatype: 'json',
-		    success: function(result) {
-		        if(result["Add"] != "Success") {
-		        	alert("ERROR: Could not add new task!");
-		        }
-		    }
-		}).fail(function() {
-			alert("ERROR: Could not add new task!");
-		});
-	}
-
-	function sortTasks(field) {
-		tasks = _.sortBy(tasks, function(task){ return task[field]; });
-
-		sortOrder[field] = !sortOrder[field];
-		if(sortOrder[field]) {
-			tasks = tasks.reverse();
-		}
-	}
+	basePath = "http://localhost:8008";
 
 	$(function() {
 		// show login fields or tasks depending on whether user is logged in or not
@@ -284,6 +50,11 @@
 
 		$("input[name='login']").click(function() {
 			loginUser();
+		});
+
+		$("a.ReloadTasks").click(function() {
+			loadTasks();
+			showTasks();
 		});
 
 		$("a.SortTasks").click(function() {
@@ -321,13 +92,16 @@
 		</div>
 
 		<div class="sixteen columns menu">
-			<div class="ten columns">
+			<div class="three columns">
+				<a href="#tasks" title="Add new Task" class="AddNewTask">Add new Task</a>
+			</div>
+			<div class="eight columns">
 				Sort Tasks by: <a href="#tasks" title="Priority" class="SortTasks">Priority</a>, 
 				<a href="#tasks" title="Created" class="SortTasks">Created</a>, 
 				<a href="#tasks" title="LastUpdated" class="SortTasks">LastUpdated</a>
 			</div>
-			<div class="five columns">
-				<a href="#tasks" title="Add new Task" class="AddNewTask">Add new Task</a>
+			<div class="four columns">
+				<a href="#tasks" title="Reload Tasks" class="ReloadTasks">Reload Tasks</a>
 			</div>
 		</div>
 

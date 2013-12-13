@@ -4,15 +4,19 @@ div.container {
 }
 
 div.menu {
-	padding-bottom: 40px; 
+	padding-bottom: 45px; 
 }
 
 div.task, div.newTask, div.editTask  {
-	padding-bottom: 40px;
+	padding-bottom: 45px;
 }
 
 div.id {
 	font-size: 75%;
+}
+
+div.taskText {
+	font-size: 125%;
 }
 
 div.modify {

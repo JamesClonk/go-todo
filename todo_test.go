@@ -296,7 +296,7 @@ func Test_todo_addTask(t *testing.T) {
 		return
 	}
 	newTask := Task{7, 2, 1234567890, 1234567899, 1, "Get some more sleep!"} // task will belong to AccountId 2
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"-1"},
 		"AccountId":   {"2"},
 		"Created":     {"1234567890"},
@@ -324,8 +324,8 @@ func Test_todo_addTask(t *testing.T) {
 		t.Errorf("GetTaskById() after addTask() returned [%v], but expected task [%v]", task, newTask)
 	}
 	now := int(time.Now().Unix())
-	if task.Created < now-2000 ||
-		task.LastUpdated < now-2000 ||
+	if task.Created < now-2 ||
+		task.LastUpdated < now-2 ||
 		task.Created > now+1 || task.LastUpdated > now+1 {
 		t.Errorf("addTask() Created and LastUpdated are not within expected range. [%v]", task)
 	}
@@ -348,7 +348,7 @@ func Test_todo_addTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"-1"},
 		"AccountId":   {"1"}, // task would belong to AccountId 1
 		"Created":     {"1234567890"},
@@ -375,7 +375,7 @@ func Test_todo_addTask(t *testing.T) {
 		return
 	}
 	newTask = Task{8, 3, 1234567800, 1234567809, 3, "Get some more sleep!!!"} // task would belong to AccountId 3
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"-1"},
 		"AccountId":   {"3"}, // task would belong to AccountId 3
 		"Created":     {"1234567800"},
@@ -403,8 +403,8 @@ func Test_todo_addTask(t *testing.T) {
 		t.Errorf("GetTaskById() after addTask() returned [%v], but expected task [%v]", task, newTask)
 	}
 	now = int(time.Now().Unix())
-	if task.Created < now-2000 ||
-		task.LastUpdated < now-2000 ||
+	if task.Created < now-2 ||
+		task.LastUpdated < now-2 ||
 		task.Created > now+1 ||
 		task.LastUpdated > now+1 {
 		t.Errorf("addTask() Created and LastUpdated are not within expected range. [%v]", task)
@@ -416,7 +416,7 @@ func Test_todo_addTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"-1"},
 		"AccountId":   {"3"}, // task would belong to AccountId 3
 		"Created":     {"1234567800"},
@@ -439,7 +439,7 @@ func Test_todo_editTask(t *testing.T) {
 		return
 	}
 	editedTask := Task{6, 1, 12345678977, 12345678977, 7, "Watch TV.. !!!!!!"}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"6"},
 		"AccountId":   {"1"},
 		"Created":     {"12345678977"},
@@ -501,7 +501,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"1"},
 		"AccountId":   {"1"},
 		"Created":     {"1234567897"},
@@ -532,7 +532,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"5"},
 		"AccountId":   {"1"}, // Change AccountId / Task Owner
 		"Created":     {"1234567897"},
@@ -571,7 +571,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"2"}, // Id does not match Id used in URL
 		"AccountId":   {"1"},
 		"Created":     {"1234567897"},
@@ -612,7 +612,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":        {"10"}, // task 10 does not yet exist
 		"AccountId": {"3"},
 		"Created":   {"1234567897"},
@@ -641,8 +641,8 @@ func Test_todo_editTask(t *testing.T) {
 		t.Errorf("GetTaskById() after editTask() returned [%v], but expected task [%v]", task, editedTask)
 	}
 	now := int(time.Now().Unix())
-	if task.Created < now-2000 ||
-		task.LastUpdated < now-2000 ||
+	if task.Created < now-2 ||
+		task.LastUpdated < now-2 ||
 		task.Created > now+1 ||
 		task.LastUpdated > now+1 {
 		t.Errorf("editTask() Created and LastUpdated are not within expected range. [%v]", task)
@@ -654,7 +654,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"11"}, // task 11 does not yet exist
 		"AccountId":   {"2"},
 		"Created":     {"1234567897"},
@@ -680,7 +680,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":          {"12"}, // task 12 does not yet exist
 		"AccountId":   {"2"},
 		"Created":     {"1234567897"},
@@ -710,7 +710,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Errorf("GetTaskById() after editTask() returned [%v], but expected task [%v]", task, editedTask)
 	}
 	now = int(time.Now().Unix())
-	if task.Created < now-2000 ||
+	if task.Created < now-2 ||
 		task.Created > now+1 {
 		t.Errorf("editTask() Created is not within expected range. [%v]", task)
 	}
@@ -721,7 +721,7 @@ func Test_todo_editTask(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":        {"17"}, // task 17 does not yet exist
 		"AccountId": {"55"},
 	}
@@ -986,7 +986,7 @@ func Test_todo_addAccount(t *testing.T) {
 		return
 	}
 	newAccount := Account{5, "Samurai", "Samurai@Ronin", "abcdef", "123456789", "User", 0}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"23"}, // ignored, does not matter
 		"Name":     {"Samurai"},
 		"Email":    {"Samurai@Ronin"},
@@ -1029,7 +1029,7 @@ func Test_todo_addAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"42"},
 		"Name":     {"Samurai 2"},
 		"Email":    {"Samurai@Ronin"},
@@ -1059,7 +1059,7 @@ func Test_todo_editAccount(t *testing.T) {
 		return
 	}
 	editedAccount := Account{2, "Cluderzky", "clude@CLUDE", "abcd", "123456", "User", 1234567891}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"2"},
 		"Name":     {"Cluderzky"},
 		"Email":    {"clude@CLUDE"},
@@ -1091,7 +1091,7 @@ func Test_todo_editAccount(t *testing.T) {
 		return
 	}
 	editedAccount = Account{3, "ozzie123", "ozzie@abrakadabra123", "abcd", "789", "User", 1234567892}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"3"},
 		"Name":     {"ozzie123"},
 		"Email":    {"ozzie@abrakadabra123"},
@@ -1122,7 +1122,7 @@ func Test_todo_editAccount(t *testing.T) {
 		return
 	}
 	editedAccount = Account{3, "ozzie", "ozzie@abrakadabra", "abcd", "789", "None", 1234567892}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"3"},
 		"Name":     {"ozzie"},
 		"Email":    {"ozzie@abrakadabra"},
@@ -1176,7 +1176,7 @@ func Test_todo_editAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"3"},
 		"Name":     {"ozzy"},
 		"Email":    {"ozzy@kadabra"},
@@ -1207,7 +1207,7 @@ func Test_todo_editAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"3"},
 		"Name":     {"OZZY"},
 		"Email":    {"ozzy@nodev"},
@@ -1238,7 +1238,7 @@ func Test_todo_editAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"2"}, // Id does not match Id used in URL
 		"Name":     {"OZZY"},
 		"Email":    {"ozzy@nodev"},
@@ -1278,7 +1278,7 @@ func Test_todo_editAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"7"}, // Id does not yet exist
 		"Name":     {"Hadron"},
 		"Email":    {"hadron@hadron"},
@@ -1305,7 +1305,7 @@ func Test_todo_editAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"7"}, // Id does not yet exist
 		"Name":     {"Hadron"},
 		"Email":    {"hadron@hadron"},
@@ -1337,7 +1337,7 @@ func Test_todo_editAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":       {"9"}, // Id does not yet exist
 		"Name":     {"Hadron 2"},
 		"Email":    {"hadron@hadron"},
@@ -1364,7 +1364,7 @@ func Test_todo_editAccount(t *testing.T) {
 		t.Error(err)
 		return
 	}
-	request.Form = url.Values{
+	request.PostForm = url.Values{
 		"Id":        {"17"}, // account 17 does not yet exist
 		"AccountId": {"55"},
 	}
