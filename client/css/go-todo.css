@@ -7,14 +7,13 @@ div.menu {
 	padding-bottom: 40px; 
 }
 
-div.task {
-	padding-bottom: 25px;
+div.task, div.newTask, div.editTask  {
+	padding-bottom: 40px;
 }
 
 div.id {
 	font-size: 75%;
 }
-
 
 div.modify {
 	font-size: 80%;
@@ -22,4 +21,8 @@ div.modify {
 
 div.time {
 	font-size: 80%;
+}
+
+textarea.taskText {
+	width: 80%;
 }

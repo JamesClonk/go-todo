@@ -24,6 +24,10 @@ var taskFlag = flag.Bool("createTasks", false, "will create some sample tasks in
 func main() {
 	parseCommandline()
 
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/client/", http.StatusFound)
+	})
+
 	http.Handle("/client/", http.StripPrefix("/client/", http.FileServer(http.Dir("client/"))))
 
 	http.HandleFunc("/auth/", getAuth)
@@ -214,6 +218,11 @@ func addTask(w http.ResponseWriter, r *http.Request, accountId int) {
 		log.Println("add Task")
 	}
 
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid data", http.StatusBadRequest)
+		return
+	}
+
 	data := r.Form
 	id := -1 // POST ignores taskId and always uses -1 to create a new task entry
 	accId, err := strconv.Atoi(data.Get("AccountId"))
@@ -276,6 +285,11 @@ func editTask(w http.ResponseWriter, r *http.Request, accountId int) {
 
 	if isLogging {
 		log.Printf("edit Task[%v]", id)
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid data", http.StatusBadRequest)
+		return
 	}
 
 	data := r.Form
@@ -499,6 +513,11 @@ func addAccount(w http.ResponseWriter, r *http.Request, accountId int) {
 		log.Println("add Account")
 	}
 
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid data", http.StatusBadRequest)
+		return
+	}
+
 	data := r.Form
 
 	account := Account{}
@@ -563,6 +582,11 @@ func editAccount(w http.ResponseWriter, r *http.Request, accountId int) {
 
 	if isLogging {
 		log.Printf("edit Account[%v]", id)
+	}
+
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Invalid data", http.StatusBadRequest)
+		return
 	}
 
 	data := r.Form

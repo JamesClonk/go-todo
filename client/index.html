@@ -81,15 +81,21 @@
 	}
 
 	function showLogin() {
-		$(".login").show();
-		$(".menu").hide();
-		$(".task").hide();
+		$("div.login").show();
+		$("div.menu").hide();
+		$("div.task").hide();
+		$("div.newTask").hide();
 	}
 
 	function showTasks() {
-		$(".login").hide();
-		$(".menu").show();
-		$(".task").show();
+		$("div.login").hide();
+		$("div.menu").show();
+		$("div.task").show();
+		$("div.newTask").hide();
+	}
+
+	function toggleAddTask() {
+		$("div.newTask").toggle();
 	}
 
 	function generateSalt() {
@@ -135,7 +141,7 @@
 	}
 
 	function addHtmlTask(task) {
-		$(".container").append(generateHtmlTask(task));
+		$("div.container").append(generateHtmlTask(task));
 	}
 
 	function queryAuth() {
@@ -162,8 +168,8 @@
 		 	login.Password = hash.toString(CryptoJS.enc.Hex);
 		 	
 		 	// query /account/ to test password and retrieve more account information
-		 	jsonUrl = basePath + "/account/" + login.AccountId + queryAuth();
-		 	$.getJSON(jsonUrl, function(data) {
+		 	url = basePath + "/account/" + login.AccountId + queryAuth();
+		 	$.getJSON(url, function(data) {
 			 	$.each(data, function(key, val) {
 			 		if(key != "Password") { // don't overwrite the password
 			 			login[key] = val;
@@ -189,10 +195,9 @@
 		resetTasks();
 		removeHtmlTasks();
 
-		var jsonUrl = basePath + "/tasks/" + queryAuth();
-
 		// retrieve tasks
-		$.getJSON(jsonUrl, function(data) {
+		var url = basePath + "/tasks/" + queryAuth();
+		$.getJSON(url, function(data) {
 		 	$.each(data, function(_, task) {;
 		 		tasks.push(task);
 		 	});
@@ -201,14 +206,12 @@
 	}
 
 	function removeHtmlTasks() {
-		$(".task").each(function() {
+		$("div.task").each(function() {
 			$(this).remove();
 		});
 	}
 
 	function addHtmlTasks(tasks) {
-		if(!isLoggedIn()) { return; }
-
 		// remove html tasks first
 		removeHtmlTasks();
 		_.forEach(tasks, addHtmlTask); // add tasks to html
@@ -224,13 +227,41 @@
 			var task = _.find(tasks, function(task){ return task.Id == taskId; });
 
 			// send deletion request
-			alert("implement deletion request here.. (DELETE)");
+			var url = basePath + "/task/" + task.Id + queryAuth();
+			$.ajax({
+			    url: url,
+			    type: 'DELETE',
+			    datatype: 'json',
+			    success: function(result) {
+			        if(result["Delete"] != "Success") {
+			        	alert("ERROR: Could not remove task!");
+			        } else {
+			        	loadTasks();
+						showTasks();
+			        }
+			    }
+			}).fail(function() {
+				alert("ERROR: Could not remove task!");
+			});
+		});
+	}
 
-			// remove from array
-			tasks = _.without(tasks, task);
-
-			// remove html
-			$("div[title='Task #"+task.Id+"']").remove();
+	function addNewTask() {
+		// send add request
+		var data = $('#AddNewTask').serialize();
+		var url = basePath + "/task/" + queryAuth();
+		$.ajax({
+		    url: url,
+		    type: 'POST',
+		    data: data,
+		    //datatype: 'json',
+		    success: function(result) {
+		        if(result["Add"] != "Success") {
+		        	alert("ERROR: Could not add new task!");
+		        }
+		    }
+		}).fail(function() {
+			alert("ERROR: Could not add new task!");
 		});
 	}
 
@@ -259,6 +290,16 @@
 			sortTasks($(this).attr('title'));
 			addHtmlTasks(tasks);
 		});
+
+		$("a.AddNewTask").click(function() {
+			toggleAddTask();
+		});
+
+		$("input.AddNewTask[type='button']").click(function() {
+			addNewTask();
+			loadTasks();
+			showTasks();
+		});
 	});
 	</script>
 
@@ -280,9 +321,38 @@
 		</div>
 
 		<div class="sixteen columns menu">
-			Sort Tasks by: <a href="#tasks" title="Priority" class="SortTasks">Priority</a>, 
-			<a href="#tasks" title="Created" class="SortTasks">Created</a>, 
-			<a href="#tasks" title="LastUpdated" class="SortTasks">LastUpdated</a>
+			<div class="ten columns">
+				Sort Tasks by: <a href="#tasks" title="Priority" class="SortTasks">Priority</a>, 
+				<a href="#tasks" title="Created" class="SortTasks">Created</a>, 
+				<a href="#tasks" title="LastUpdated" class="SortTasks">LastUpdated</a>
+			</div>
+			<div class="five columns">
+				<a href="#tasks" title="Add new Task" class="AddNewTask">Add new Task</a>
+			</div>
+		</div>
+
+		<div class="sixteen columns newTask">
+			<form id="AddNewTask">
+				<input type="hidden" name="Id" value="-1"/>
+				<input type="hidden" name="AccountId" value="1"/>
+				<div class="three columns">
+					Priority:
+					<select class="AddNewTask" name="Priority">
+						<option value="5">5 - Highest</option>
+						<option value="4">4</option>
+						<option value="3" selected="selected">3 - Default</option>
+						<option value="2">2</option>
+						<option value="1">1 - Lowest</option>
+					</select> 
+				</div>
+				<div class="fifteen columns">
+					<textarea class="taskText AddNewTask" name="Task"></textarea>
+				</div>
+				<div class="fifteen columns">
+					<input type="reset" value="Reset"/>
+					<input type="button" value="Save new Task" class="AddNewTask"/>
+				</div>
+			<form>
 		</div>
 
 	</div>
