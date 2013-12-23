@@ -22,6 +22,15 @@ var adminFlag = flag.Bool("createAdmin", false, "will create a new admin account
 var taskFlag = flag.Bool("createTasks", false, "will create some sample tasks in the database")
 
 func main() {
+	// parse configfile first, then commandline options second..
+	cfg, err := parseConfig("go-todo.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+	isLogging = cfg.Logging
+	SetDatabase(cfg.DatabaseFile)
+	port := strconv.Itoa(cfg.Port)
+
 	parseCommandline()
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -51,13 +60,16 @@ func main() {
 		"DELETE": deleteAccount,
 	}))
 
-	http.ListenAndServe(":8008", nil)
+	log.Printf("Starting go-todo on port [%v]", port)
+	http.ListenAndServe(":"+port, nil)
 }
 
 func parseCommandline() {
 	flag.Parse()
 
-	SetDatabase(*fileFlag)
+	if len(*fileFlag) > 0 {
+		SetDatabase(*fileFlag)
+	}
 
 	if *databaseFlag {
 		SetupDatabase()
