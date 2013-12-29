@@ -24,4 +24,5 @@ _testmain.go
 
 *.sublime*
 go-todo
-data/*
+data/*db
+
