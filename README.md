@@ -1,5 +1,7 @@
 # go-todo
-Go-Todo is a simple REST web application for managing your todo/task lists, written in Go.      
+Go-Todo is a simple REST web application for managing your todo/task lists, written in Go.    
+
+[![Build Status](https://travis-ci.org/JamesClonk/go-todo.png?branch=master)](https://travis-ci.org/JamesClonk/go-todo)
        
 ## Overview
 Go-Todo contains 2 objects, accounts and tasks.       
