@@ -64,8 +64,8 @@ All following requests need to be given the query string:
 (Most things here only work or make sense using an account with "Admin" role)
 
 ## Client
-Next step for me to do is to write a sample html page using jQuery to act as demo client.     
-It's on my Todo-List. ;-)    
+There is a sample client under the client/ subdirectory.     
+todo.go will redirect there if accessed by browser.
 
 ## Bugs
 There's probably lotsa bugs in the unit test code.        
