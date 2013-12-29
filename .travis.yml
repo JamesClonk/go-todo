@@ -1,9 +1,11 @@
 language: go
 go:
   - 1.2
-  - tip
 env:
   - GOARCH=amd64
+services:
+ - sqlite3
+before_script:
+ - go get github.com/mattn/go-sqlite3
 notifications:
-          email: false
-
+  email: false
